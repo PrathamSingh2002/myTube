@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import withAuth from "@/components/auth";
 import AddUser from "@/components/addUser";
 import { searchVideo } from "@/services/video";
+import { getRecommendedVideos } from "@/services/home";
 import { setVideos } from "../store/videoSlice";
 import { useRouter } from "next/navigation";
 import { getSubscribedChannels } from "@/services/subscription";
@@ -19,14 +20,17 @@ function Home() {
     const [hasMoreVideos, setHasMoreVideos] = useState(true);
     const [hasMoreChannels, setHasMoreChannels] = useState(true);
     const [inputVideo, setInputVideo] = useState("");
+    const [searchQuery, setSearchQuery] = useState("");
     const [channels, setChannels] = useState<any>([]);
+    const [recommendedVideos, setRecommendedVideos] = useState<any>([]);
     const dispatch = useDispatch();
     const router = useRouter();
     const channelsRef = useRef<HTMLDivElement>(null);
     const videoObserver = useRef<IntersectionObserver | null>(null);
     const channelObserver = useRef<IntersectionObserver | null>(null);
+
     function formatViews(num:number) {
-        console.log(num)
+        if(!num) return;
         if (num >= 1e9) {
             return (num / 1e9).toFixed(1) + 'B';
         } else if (num >= 1e6) {
@@ -37,8 +41,8 @@ function Home() {
             return num.toString();
         }
     }
+
     function timeAgo(dbDate: string): string {
-        // Convert the DBMS date string to a JavaScript Date object
         const date = new Date(dbDate);
         const now = new Date();
         const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
@@ -64,6 +68,7 @@ function Home() {
     
         return "just now";
     }
+
     const lastVideoElementRef = useCallback((node: HTMLDivElement) => {
         if (isVideoLoading) return;
         if (videoObserver.current) videoObserver.current.disconnect();
@@ -103,12 +108,29 @@ function Home() {
         }
     }
 
+    const fetchRecommendedVideos = async (page:any) => {
+        try {
+            setIsVideoLoading(true);
+            const res = await getRecommendedVideos(page);
+            if (res?.data?.videos) {
+                setHasMoreVideos(res.data.videos.length === 5);
+                setRecommendedVideos((prevVideos:any) => ([...prevVideos, ...res.data.videos]));
+            } else {
+                setHasMoreVideos(false);
+            }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setIsVideoLoading(false);
+        }
+    }
+
     const fetchChannels = async (page: number) => {
         try {
             setIsChannelLoading(true);
             const res = await getSubscribedChannels(user._id, page);
             if (res && res.data) {
-                setHasMoreChannels(res.data.length  === 5);
+                setHasMoreChannels(res.data.length === 5);
                 setChannels((prevChannels:any) => [...prevChannels, ...res.data]);
             } else {
                 setHasMoreChannels(false);
@@ -128,8 +150,12 @@ function Home() {
     }, [user?._id, channelPage])
 
     useEffect(() => {
-        fetchVideos(inputVideo, videoPage);
-    }, [videoPage])
+        if (!searchQuery) {
+            fetchRecommendedVideos(videoPage);
+        } else {
+            fetchVideos(searchQuery, videoPage);
+        }
+    }, [videoPage, searchQuery])
 
     const loadMoreVideos = () => {
         if (hasMoreVideos && !isVideoLoading) {
@@ -142,9 +168,11 @@ function Home() {
             setChannelPage(prev => prev + 1);
         }
     }
+
     const goToProfile = (username:string) => {
         router.replace('profile/'+username);
     }
+
     const scrollChannels = (direction: 'left' | 'right') => {
         if (channelsRef.current) {
             const scrollAmount = channelsRef.current.offsetWidth;
@@ -172,8 +200,9 @@ function Home() {
                     className="px-8 py-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-md"
                     onClick={() => {
                         dispatch(setVideos([]));
+                        setRecommendedVideos([]);
                         setVideoPage(1);
-                        fetchVideos(inputVideo, 1);
+                        setSearchQuery(inputVideo);
                     }}
                 >
                     Search
@@ -237,12 +266,14 @@ function Home() {
                 </div>
             </div>
             <div className="mb-4">
-                <h1 className="text-4xl font-bold mb-8 text-gray-800">My Video Page</h1>
+                <h1 className="text-4xl font-bold mb-8 text-gray-800">
+                    {searchQuery ? "Search Results" : "Recommended Videos"}
+                </h1>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                    {videoData.map((el: any, indx: number) => (
+                    {(searchQuery ? videoData : recommendedVideos).map((el: any, indx: number) => (
                         <div 
                             key={indx} 
-                            ref={indx === videoData.length - 1 ? lastVideoElementRef : null}
+                            ref={indx === (searchQuery ? videoData : recommendedVideos).length - 1 ? lastVideoElementRef : null}
                             className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer" 
                             onClick={() => router.replace(`/video/${el._id}?from=home`)}
                         >
@@ -260,9 +291,16 @@ function Home() {
                             </div>
                             <div className="p-6">
                                 <h2 className="font-bold text-xl mb-3 text-gray-800 line-clamp-2">{el.title}</h2>
-                                <div className=" flex justify-between">
-                                    <div className="text-gray-600 text-sm">{formatViews(el.views) +" views"}</div>
-                                    <div className="text-gray-600 text-sm">{timeAgo(el.createdAt)}</div>
+                                <div className=" flex items-center mb-2">
+                                    <img className="w-10 h-10 rounded-full mr-2" src={searchQuery ? el?.owner?.[0]?.avatar : el?.owner?.avatar} />
+                                    <div className=" flex-col justify-between items-center">
+                                        <div className="text-gray-600 text-sm font-bold">{searchQuery ? el?.owner?.[0]?.username : el?.owner?.username}</div>
+                                        <div className=" flex items-center">
+                                            <div className="mr-1 text-gray-600 text-xs">{formatViews(el.views) +" views"}</div>
+                                            <div className="mr-1 text-gray-600  text-lg">{" · "}</div>
+                                            <div className=" text-gray-600 text-xs">{timeAgo(el.createdAt)}</div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
