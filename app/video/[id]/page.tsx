@@ -8,11 +8,12 @@ import { useEffect, useState } from 'react';
 const VideoPage = () => {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const [data, setData] = useState<any>(null);
-  const fetchVideo = async () => {
+  const fetchVideo = async (obj:any) => {
     if(params.id){
       try{
-        const res = await getVideoById(params.id);  
+        const res = await getVideoById(params.id, obj);  
         if(res?.data){
           setData(res.data);
         }else{
@@ -25,7 +26,12 @@ const VideoPage = () => {
     }
   }
   useEffect(() => {
-    fetchVideo();
+    if(searchParams && searchParams.get('from') === 'home' ){
+      router.replace(`/video/${params.id}`);
+      fetchVideo("home");
+    }else{
+      fetchVideo("video");
+    }
   }, []);
 
   return (

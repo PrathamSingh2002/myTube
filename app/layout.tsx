@@ -3,9 +3,9 @@ import "./globals.css";
 import Link from "next/link";
 import { Provider } from "react-redux";
 import { store } from "./store/store";
-import User from "@/components/User";
-import { FaHome, FaBell, FaUpload } from 'react-icons/fa';
-
+import { FaHome } from 'react-icons/fa';
+import DropDown from "@/components/dropDown";
+import VideoUploadDropDown from "@/components/videoUploadDropdown";
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -19,17 +19,17 @@ export default function RootLayout({
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex justify-between h-16">
                 <div className="flex">
-                  <div className="flex-shrink-0 flex items-center">
-                    <Link href="/home" className="text-2xl font-bold text-indigo-600">YourLogo</Link>
+                  <div className="hidden sm:flex-shrink-0 sm:flex sm:items-center">
+                    <Link href="/home" className="text-2xl font-bold text-indigo-600">HostVideo</Link>
                   </div>
-                  <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-                    <NavLink href="/home" icon={<FaHome />}>Home</NavLink>
-                    <NavLink href="/notifications" icon={<FaBell />}>Notifications</NavLink>
-                    <NavLink href="/upload" icon={<FaUpload />}>Upload</NavLink>
+                  <div className="flex ml-6 space-x-8 sm:ml-6 sm:flex sm:space-x-8">
+                    <div className="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700 transition duration-150 ease-in-out">
+                      <VideoUploadDropDown/>
+                    </div>
                   </div>
                 </div>
-                <div className="hidden sm:ml-6 sm:flex sm:items-center">
-                  <User />
+                <div className=" flex items-center ml-6">
+                  <DropDown />
                 </div>
               </div>
             </div>

@@ -8,20 +8,6 @@ const withAuth = (WrappedComponent:any) => {
     return (props:any) => {
         const [isAuthenticated, setIsAuthenticated] = useState("loading")
         const router = useRouter();
-        const regenerateAccessToken = async () => {
-            try{
-                const res = await refreshTokenService({});
-                if(res.data && res.data.accessToken && res.data.refreshToken){
-                    window.localStorage.setItem('accessToken', JSON.stringify(res.data.accessToken));
-                    window.localStorage.setItem('refreshToken', JSON.stringify(res.data.refreshToken));
-                    return true;
-                }else {
-                    return false;
-                }
-            }catch(err){
-                return false;
-            }
-        }
         const checkAuth = async () => {
             const data = window.localStorage.getItem('accessToken');
             if(!data){
@@ -34,8 +20,7 @@ const withAuth = (WrappedComponent:any) => {
                         return false;
                     }else{
                         if(decodedToken.exp < currentTime){
-                            const res = await regenerateAccessToken();
-                            return res;
+                            return false;
                         }else{
                             return true;
                         };
