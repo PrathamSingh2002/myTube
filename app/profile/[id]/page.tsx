@@ -10,8 +10,10 @@ import { getUserById } from "@/services/user"
 import { MdDelete } from "react-icons/md";
 import DeleteVideoPopup from "@/components/deleteVideoPopup"
 import DeleteTweetPopup from "@/components/deleteTweetPopup"
+import { useSelector } from "react-redux"
 function Profile() {
     const params = useParams();
+    const rootUser = useSelector((state: any)=>state.user.userInfo);
     const [user, setUser] = useState<any>(null);
     const [tab, setTab] = useState('videos');
     const [videos, setVideos] = useState<any>([]);
@@ -203,7 +205,7 @@ function Profile() {
                         <p className="text-gray-700 text-sm line-clamp-3">{el.description}</p>
                       </div>
                     </div>
-                    <button className="text-white font-bold bg-red-500 h-10 w-full items-center text-center transition-all duration-300 hover:bg-red-900" onClick={()=>deleteVideoPopup(el._id, el.thumbnail)} >Delete</button>
+                    {rootUser && rootUser._id == user._id && <button className="text-white font-bold bg-red-500 h-10 w-full items-center text-center transition-all duration-300 hover:bg-red-900" onClick={()=>deleteVideoPopup(el._id, el.thumbnail)} >Delete</button>}
                   </div>
                 ))}
                 {isLoading && [1].map((el, ind) => 
@@ -224,11 +226,14 @@ function Profile() {
                     <p className="text-gray-800">{tweet.content}</p>
                     <div className=" flex justify-between items-center">
                       <p className="text-sm text-gray-500 mt-2">{new Date(tweet.createdAt).toLocaleDateString()}</p>
+                      {
+                        rootUser && rootUser._id == user._id && 
                       <div onClick={() => {
                         deleteTweetPopup(tweet._id);
                       }} className="hover:text-red-500">
                         <MdDelete />
                       </div>
+                      }
                     </div>
                   </div>
                 ))}

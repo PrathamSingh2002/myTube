@@ -2,14 +2,18 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { FaUser, FaCog, FaSignOutAlt, FaHistory } from 'react-icons/fa';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import AddUser from './addUser';
 import { IoReorderThree } from 'react-icons/io5';
+import { useRouter } from 'next/navigation';
+import { setUser } from '@/app/store/userSlice';
 
 const DropDown = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter()
   const dropdownRef = useRef<any>(null);
   const user = useSelector((state: any)=>state.user.userInfo);
+  const dispatch = useDispatch();
   useEffect(() => {
     const handleClickOutside = (event:any) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -22,7 +26,13 @@ const DropDown = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
-
+  const logOut = () => {
+    window.localStorage.removeItem('user');
+    window.localStorage.removeItem('accessToken');
+    window.localStorage.removeItem('refreshToken');
+    dispatch(setUser(null))
+    router.replace('/');
+  }
   return (
     <div className="relative " ref={dropdownRef}>
       <button
@@ -58,7 +68,9 @@ const DropDown = () => {
                 Watch History
             </span>
           </Link>
-          <button  onClick={() => {/* Implement logout logic */}} className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+          <button  onClick={() => {
+            logOut()
+          }} className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
             <FaSignOutAlt  />
             <span className='ml-3'>
                 Logout

@@ -31,14 +31,17 @@ const withAuth = (WrappedComponent:any) => {
                 }
             }
         }
-        useEffect(() => {
-            const valid = checkAuth();
+        const validCheckAndMove = async () => {
+            const valid = await checkAuth();
             if(!valid){
                 router.push('/login');
                 setIsAuthenticated('false');
             }else{
                 setIsAuthenticated('true');
             }
+        }
+        useEffect(() => {
+            validCheckAndMove();
         }, [router]);
 
         if(isAuthenticated == 'loading'){
