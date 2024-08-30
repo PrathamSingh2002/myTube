@@ -3,7 +3,6 @@ import "./globals.css";
 import Link from "next/link";
 import { Provider } from "react-redux";
 import { store } from "./store/store";
-import { FaHome } from 'react-icons/fa';
 import DropDown from "@/components/dropDown";
 import VideoUploadDropDown from "@/components/videoUploadDropdown";
 export default function RootLayout({
