@@ -13,8 +13,7 @@ export default function AddUser(WrappedComponent:any) {
             const data = window.localStorage.getItem('user');
             if(data){
                 dispatch(setUser(JSON.parse(data)));
-            }else{
-                router.replace('/login')
+                router.replace('/home');
             }
         },[])
         return <WrappedComponent {...props}/>
