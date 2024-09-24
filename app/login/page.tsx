@@ -91,4 +91,4 @@ function Login() {
   );
 }
 
-export default AddUser(Login);
+export default Login;

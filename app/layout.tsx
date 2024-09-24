@@ -1,10 +1,16 @@
 'use client'
 import "./globals.css";
 import Link from "next/link";
-import { Provider, useSelector } from "react-redux";
+import { Provider, useDispatch, useSelector } from "react-redux";
 import { store } from "./store/store";
-import DropDown from "@/components/dropDown";
-import VideoUploadDropDown from "@/components/videoUploadDropdown";
+import { FiSearch } from "react-icons/fi";
+import { setVideoPage, setVideos, setRecommendedVideos, setSearchQuery } from "./store/videoSlice";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
+const DropDown = dynamic(() => import('@/components/dropDown'), { ssr: false });
+const VideoUploadDropDown = dynamic(() => import('@/components/videoUploadDropdown'), { ssr: false });
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -21,36 +27,52 @@ export default function RootLayout({
 }
 const NavBarAndPage = (props:any) =>{
   const user = useSelector((state:any) =>(state.user.userInfo));
+  const [inputVideo, setInputVideo] = useState("");
+  const router = useRouter();
+  const dispatch = useDispatch();
+  const searchQuery = useSelector((state:any) => state.video.searchQuery);
+  
   return (
-    <body className="bg-gray-100 min-h-screen">
-      <nav className="bg-white shadow-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex">
-              <div className="hidden sm:flex-shrink-0 sm:flex sm:items-center">
-                <Link href="/home" className="text-2xl font-bold text-indigo-600">HostVideo</Link>
+    <body >
+      <nav>
+        <div className="w-full">
+          <div className="flex  flex-row pl-8 pr-8 mb-4 pt-2 pb-2 w-full justify-between items-center">
+            <div className=" flex flex-row w-full items-centSubscribeder">
+              <div className=" mr-4 text-blue-600 flex-row items-center justify-center">
+                <Link href="/home" className=" text-2xl font-bold max-sm:hidden">HVideo</Link>
+                <Link href="/home" className=" text-2xl font-bold sm:hidden">HV</Link>
               </div>
-              <div className="flex ml-6 space-x-8 sm:ml-6 sm:flex sm:space-x-8">
-                <div className="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700 transition duration-150 ease-in-out">
-                  {user && <VideoUploadDropDown/>}
-                </div>
+              <div className="flex flex-row w-full items-center justify-center" >
+                  <Input  placeholder="search" className="rounded-full pr-8 h-8" onChange={(ev)=>{
+                    setInputVideo(ev.target.value)
+                  }}/>
+                  <div className=" size-8  relative right-8 bg-accent  text-primary rounded-r-full transition-all duration-150 hover:bg-primary hover:text-secondary" onClick={() => {
+                      if(inputVideo != searchQuery && inputVideo != ""){
+                        dispatch(setVideos([]));
+                        dispatch(setRecommendedVideos([]));
+                        dispatch(setVideoPage(1));
+                        dispatch(setSearchQuery(inputVideo));
+                        router.replace('/home');
+                      }
+                      }}>
+                    <FiSearch className="p-2  size-8 " />
+                  </div>
               </div>
             </div>
-            <div className=" flex items-center ml-6">
-              {user && <DropDown />}
+            <div className=" flex flex-row items-center">
+              <div className=" mr-4" >
+                {user && <VideoUploadDropDown/>}
+              </div>
+              <div className="">
+                {user && <DropDown />}
+              </div>
             </div>
           </div>
         </div>
       </nav>
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <main>
         {props.children}
       </main>
     </body>
   )
 } 
-const NavLink = ({ href, children, icon }:any) => (
-  <Link href={href} className="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700 transition duration-150 ease-in-out">
-    <span className="mr-2">{icon}</span>
-    {children}
-  </Link>
-);

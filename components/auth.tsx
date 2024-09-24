@@ -20,6 +20,7 @@ const withAuth = (WrappedComponent:any) => {
                         return false;
                     }else{
                         if(decodedToken.exp < currentTime){
+                            router.replace('session');
                             return false;
                         }else{
                             return true;
@@ -34,7 +35,6 @@ const withAuth = (WrappedComponent:any) => {
         const validCheckAndMove = async () => {
             const valid = await checkAuth();
             if(!valid){
-                router.push('/login');
                 setIsAuthenticated('false');
             }else{
                 setIsAuthenticated('true');

@@ -1,10 +1,11 @@
 "use client"
+import dynamic from 'next/dynamic';
 import { getWatchHistory } from '@/services/user'
 import { useRouter } from 'next/navigation';
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { FiPlay } from 'react-icons/fi';
-
-export default function History() {
+import AddUser from '@/components/addUser';
+function History() {
   const router = useRouter();
   const [page, setPage] = useState(1);
   const [data, setData] = useState<any>([]);
@@ -83,3 +84,4 @@ export default function History() {
     </div>
   )
 }
+export default AddUser(History);
