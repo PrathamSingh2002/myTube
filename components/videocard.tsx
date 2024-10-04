@@ -1,3 +1,6 @@
+'use client'
+import CustomImage from "./Image";
+
 export default function VideoCard({videoData}:{videoData:any}) {
     function formatViews(num:number) {
         if(!num) return;
@@ -69,21 +72,20 @@ export default function VideoCard({videoData}:{videoData:any}) {
     return (
     <div >
         <div className=" mb-4 relative group hover:rounded-none hover:scale-[1.01] transition-all delay-300">
-            <img
+            <CustomImage
                 src={videoData.thumbnail}
-                alt={videoData.title}
                 className="aspect-video rounded-md "
             />
             <div className="absolute rounded-sm right-1 bottom-1  bg-black bg-opacity-60 text-white text-[14px] font-medium p-[1px] pl-[4px] pr-[4px] group-hover:opacity-0 group-hover:transition-all delay-300">{formatDuration(videoData.duration)}</div>
         </div>
         <div className=" flex flex-row gap-2">
-            <div className=" flex flex-col justify-start">
-                <img className=" aspect-square rounded-full size-12" src={videoData?.owner?.avatar?videoData?.owner?.avatar:videoData?.owner?.[0]?.avatar} />
+            <div className=" flex flex-col justify-start size-12 w-12 flex-shrink-0">
+                <CustomImage className=" aspect-square rounded-full size-12" src={videoData?.owner?.avatar?videoData?.owner?.avatar:videoData?.owner?.[0]?.avatar} />
             </div>
-            <div className="">
-                <div className=" text-base font-medium">{videoData.title}</div>
-                <div className=" text-xs text-muted-foreground">{videoData?.owner?.username?videoData?.owner?.username:videoData?.owner?.[0]?.username}</div>
-                <div className=" flex flex-row text-xs text-muted-foreground">
+            <div className=" flex flex-col justify-center overflow-hidden">
+                <div className=" text-sm font-semibold">{videoData.title}</div>
+                <div className=" text-xs text-muted-foreground font-medium">{videoData?.owner?.username?videoData?.owner?.username:videoData?.owner?.[0]?.username}</div>
+                <div className=" flex flex-row text-xs text-muted-foreground font-medium">
                     <div className="">{formatViews(videoData.views) +" views"}</div>
                     <div className="ml-1 mr-1">{" · "}</div>
                     <div className="">{timeAgo(videoData.createdAt)}</div>

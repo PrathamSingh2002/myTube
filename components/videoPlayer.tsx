@@ -3,7 +3,11 @@
 import { likesVideo } from '@/services/likes';
 import { subscribeChannel } from '@/services/subscription';
 import React, { useEffect, useRef, useState } from 'react';
-import { FaThumbsUp, FaEye, FaPlay, FaPause, FaComment, FaUserCircle, FaBell } from 'react-icons/fa';
+import { FaThumbsUp, FaEye, FaPlay, FaPause, FaComment, FaUserCircle, FaBell, FaRegThumbsUp, FaRegBellSlash } from 'react-icons/fa';
+import AddUser from './addUser';
+import CustomImage from './Image';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
 
 interface VideoPlayerProps {
   video: {
@@ -34,30 +38,50 @@ interface VideoPlayerProps {
 
 const VideoPlayer: React.FC<VideoPlayerProps> = ({ video }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [updatingLikes, setUpdatingLikes] = useState(false);
+  const [togglingSubscribe, setTogglingSubscribe] = useState(false);
   const [subscribersCount, setSubscriberCount] = useState(video.subscribersCount);
   const [isSubscribed, setIsSubscribed] = useState(video.isSubscribed);
   const [isLiked, setIsLiked] = useState(video.isLikedByUser);
   const [likesCount, setLikesCount] = useState<any>(video.likesCount);
   const [isPlaying, setIsPlaying] = useState(false);
   const [newComment, setNewComment] = useState('');
+  const [commentText,setCommentText] = useState('');
 
   const increaseLike = async () => {
+    setUpdatingLikes(true);
     try {
       const res = await likesVideo(video._id);
       setLikesCount((prev: any) => (isLiked ? prev - 1 : prev + 1));
       setIsLiked((prev) => !prev);
     } catch (err) {
       console.log(err);
+    }finally{
+      setUpdatingLikes(false);
     }
   };
-
+  function formatViews(num:number) {
+    if(!num) return;
+    if (num >= 1e9) {
+        return (num / 1e9).toFixed(1) + 'B';
+    } else if (num >= 1e6) {
+        return (num / 1e6).toFixed(1) + 'M';
+    } else if (num >= 1e3) {
+        return (num / 1e3).toFixed(1) + 'K';
+    } else {
+        return num.toString();
+    }
+}
   const toggleSubscribe = async () => {
+    setTogglingSubscribe(true);
     try {
       await subscribeChannel(video.owner.username);
       setSubscriberCount((prev) => (isSubscribed ? prev - 1 : prev + 1));
       setIsSubscribed((prev) => !prev);
     } catch (err) {
       console.log(err);
+    }finally{
+      setTogglingSubscribe(false);
     }
   };
 
@@ -86,93 +110,58 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video }) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-100">
-      <div className="flex-grow container mx-auto p-6">
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          <div className="relative pb-[56.25%]"> {/* 16:9 Aspect Ratio */}
+    <div className='w-full flex flex-col '>
+      <div className='w-full pl-8 pr-8 grid grid-cols-1 gap-4 md:grid-cols-[2fr_1fr]'>
+        <div className=' w-full'>
+          <div className=' w-full mb-2'>
             <video
               ref={videoRef}
               poster={video.thumbnail}
-              className="absolute top-0 left-0 w-full h-full object-cover"
+              className="w-full aspect-video rounded-md box-border"
               controls
+              autoPlay
             >
               <source src={video.videoFile} type="video/mp4" />
               Your browser does not support the video tag.
             </video>
-            <button
-              onClick={handlePlayPause}
-              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black bg-opacity-50 text-white p-4 rounded-full hover:bg-opacity-75 transition-all"
-            >
-              {isPlaying ? <FaPause size={24} /> : <FaPlay size={24} />}
-            </button>
           </div>
-          <div className="p-6">
-            <h1 className="text-3xl font-bold mb-4 text-gray-800">{video.title}</h1>
-            <div className="flex items-center justify-between text-gray-600 mb-4 flex-wrap">
-              <div className="flex items-center space-x-6">
-                <button 
-                  onClick={increaseLike} 
-                  className={`flex items-center space-x-1 ${isLiked ? 'text-blue-500' : ''}`}
-                >
-                  <FaThumbsUp /> <span>{likesCount}</span>
-                </button>
-                <span className="flex items-center space-x-1">
-                  <FaEye /> <span>{video.views || 0}</span>
-                </span>
-                <span>{formatDuration(video.duration)}</span>
-              </div>
-              <div className="flex items-center space-x-4 mt-4 md:mt-0">
-                <img src={video.owner.avatar} alt={video.owner.fullName} className="w-12 h-12 rounded-full" />
-                <div>
-                  <p className="font-semibold">{video.owner.fullName}</p>
-                  <p className="text-sm">{subscribersCount} subscribers</p>
+          <div className='mb-1 overflow-hidden'>
+            <div className=" text-lg font-semibold">{video.title}</div>
+          </div>
+          <div className=' flex items-ceter flex-col sm:flex-row'>
+            <div className=" flex flex-row gap-1 items-center mr-8 max-sm:mb-2">
+                <div className=" flex flex-col justify-start flex-shrink-0 ">
+                    <CustomImage className=" shadow aspect-square rounded-full size-12" src={video.owner.avatar} />
                 </div>
-                <button
-                  onClick={toggleSubscribe}
-                  className={`px-4 py-2 rounded-full text-sm font-medium ${
-                    isSubscribed 
-                      ? 'bg-gray-200 text-gray-800 hover:bg-gray-300' 
-                      : 'bg-red-600 text-white hover:bg-red-700'
-                  }`}
-                >
-                  {isSubscribed ? 'Subscribed' : 'Subscribe'}
-                </button>
-              </div>
-            </div>
-            <p className="text-gray-700 mb-6">{video.description}</p>
-            <div className="border-t pt-6">
-              <h2 className="text-xl font-semibold mb-4 flex items-center">
-                <FaComment /> Comments ({video.commentsCount})
-              </h2>
-              <form onSubmit={handleCommentSubmit} className="mb-6">
-                <textarea
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  className="w-full p-3 border rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  rows={3}
-                  placeholder="Add a comment..."
-                />
-                <button
-                  type="submit"
-                  className="mt-2 bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors"
-                >
-                  Post Comment
-                </button>
-              </form>
-              {/* Placeholder for comments list */}
-              <div className="space-y-4">
-                <div className="flex items-start space-x-3">
-                  <div className="w-10 h-10 text-gray-400">
-                    <FaUserCircle />
-                  </div>
-                  <div>
-                    <p className="font-semibold">John Doe</p>
-                    <p className="text-gray-600">Great video! Thanks for sharing.</p>
-                  </div>
+                <div className=" overflow-hidden max-w-24 ">
+                    <div className=" text-sm font-semibold truncate">{video.owner.username}dddddsdsdsd</div>
+                    <div className=" text-xs text-muted-foreground">{formatViews(video.subscribersCount) + " subscribers"}</div>
                 </div>
-                {/* Add more placeholder comments as needed */}
-              </div>
             </div>
+            <div className=' flex flex-row gap-1 items-center'>
+              <Button disabled = {togglingSubscribe} size={'sm'} className={` font-semibold rounded-full ${isSubscribed && "bg-muted text-primary hover:bg-gray-300 border-[1px] border-primary"} `} onClick={toggleSubscribe}>
+                <FaRegBellSlash className= {` mr-1 ${!isSubscribed && "hidden"}`} />
+                <div className={ `font-semibold ${isSubscribed && "text-primary"}`}>
+                  {isSubscribed?"subscribed":'subscribe'}
+                </div>
+              </Button>
+              <Button disabled = {updatingLikes} size={'sm'} className='rounded-full bg-muted border-[1px] border-primary hover:bg-gray-300' onClick={increaseLike}>
+                <FaThumbsUp className={`mr-1 text-primary ${!isLiked && 'hidden'}`} />
+                <FaRegThumbsUp className={`mr-1 text-primary ${isLiked && 'hidden'}`} />
+                <div className=' text-primary font-semibold'>{formatViews(likesCount)}</div>
+              </Button>
+            </div>
+          </div>
+        </div>
+        <div className=' flex items-center flex-col gap-2'>
+          <div>
+            <div className='font-semibold'>{video.commentsCount} comments</div>
+          </div>
+          <div className=' w-full flex flex-row gap-2'>
+            <Input placeholder='Add comment...' onChange={(ev)=>{
+              setCommentText(ev.target.value)
+            }}></Input>
+            <Button disabled = {commentText === ''}  variant={'ghost'}>Submit</Button>
           </div>
         </div>
       </div>
@@ -180,4 +169,4 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video }) => {
   );
 };
 
-export default VideoPlayer;
+export default AddUser(VideoPlayer);
