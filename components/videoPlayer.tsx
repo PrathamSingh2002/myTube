@@ -8,6 +8,8 @@ import AddUser from './addUser';
 import CustomImage from './Image';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
+import { addCommentService, getCommentsService } from '@/services/comment';
+import { comment } from 'postcss';
 
 interface VideoPlayerProps {
   video: {
@@ -44,10 +46,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video }) => {
   const [isSubscribed, setIsSubscribed] = useState(video.isSubscribed);
   const [isLiked, setIsLiked] = useState(video.isLikedByUser);
   const [likesCount, setLikesCount] = useState<any>(video.likesCount);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [newComment, setNewComment] = useState('');
   const [commentText,setCommentText] = useState('');
-
+  const [comments,setComments] = useState<any>([]);
+  const [page, setPage] = useState(1);
   const increaseLike = async () => {
     setUpdatingLikes(true);
     try {
@@ -85,29 +86,52 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video }) => {
     }
   };
 
-  const handlePlayPause = () => {
-    if (videoRef.current) {
-      if (videoRef.current.paused) {
-        videoRef.current.play();
-        setIsPlaying(true);
-      } else {
-        videoRef.current.pause();
-        setIsPlaying(false);
-      }
-    }
-  };
-
   const formatDuration = (duration: number) => {
     const minutes = Math.floor(duration / 60);
     const seconds = Math.floor(duration % 60);
     return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   };
 
-  const handleCommentSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('New comment:', newComment);
-    setNewComment('');
+  const getComments = async () => {
+    try{
+      const res = await getCommentsService(video._id, page);
+      if(res.data){
+        if(page === 1){
+          setComments(res.data);
+        }else{
+          setComments([...comments, ...res.data]);
+        }
+      }
+    }catch(err:any){
+      console.log(err);
+    }
   };
+  const loadMoreComments = () => {
+    setPage((prev)=>prev+1);
+  }
+  const addComment = async () => {
+    if(commentText != ''){
+      const obj = {
+        content:commentText
+      }
+      try{
+        const res = await addCommentService(video._id, obj);
+        if(res.data){
+          setCommentText('');
+          setPage(1);
+          video.commentsCount++;
+        }
+      }catch(err:any){
+
+      }finally{
+
+      }
+    }
+  }
+
+  useEffect(()=>{
+    getComments();
+  }, [page]);
 
   return (
     <div className='w-full flex flex-col '>
@@ -134,8 +158,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video }) => {
                     <CustomImage className=" shadow aspect-square rounded-full size-12" src={video.owner.avatar} />
                 </div>
                 <div className=" overflow-hidden max-w-24 ">
-                    <div className=" text-sm font-semibold truncate">{video.owner.username}dddddsdsdsd</div>
-                    <div className=" text-xs text-muted-foreground">{formatViews(video.subscribersCount) + " subscribers"}</div>
+                    <div className=" text-sm font-semibold truncate">{video.owner.username}</div>
+                    <div className=" text-xs text-muted-foreground">{formatViews(subscribersCount) + " subscribers"}</div>
                 </div>
             </div>
             <div className=' flex flex-row gap-1 items-center'>
@@ -153,15 +177,33 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video }) => {
             </div>
           </div>
         </div>
-        <div className=' flex items-center flex-col gap-2'>
+        <div className=' flex  flex-col gap-2'>
           <div>
             <div className='font-semibold'>{video.commentsCount} comments</div>
           </div>
           <div className=' w-full flex flex-row gap-2'>
-            <Input placeholder='Add comment...' onChange={(ev)=>{
+            <Input value={commentText} placeholder='Add comment...' onChange={(ev)=>{
               setCommentText(ev.target.value)
             }}></Input>
-            <Button disabled = {commentText === ''}  variant={'ghost'}>Submit</Button>
+            <Button disabled = {commentText === ''}  variant={'ghost'} onClick={addComment}>Submit</Button>
+          </div>
+          <div className=' flex flex-col'>
+            {
+              comments.map((el:any, ind:any) =>{
+                return (
+                  <div key={ind} className=' flex flex-row gap-1 mb-2'>
+                    <div>
+                      <CustomImage src={el.ownerOfComment.avatar} className=' size-10' />
+                    </div>
+                    <div className=''>
+                      <div className=' text-xs'>@{el.ownerOfComment.username}</div>
+                      <div className=' text-sm'>{el.content}</div>
+                    </div>
+                  </div>
+                )
+              })
+            }
+            <Button disabled = {comments.length === video.commentsCount} variant={'outline'} className='mb-2' onClick={loadMoreComments}>{comments.length === video.commentsCount?"No more comments":"Load more"}</Button>
           </div>
         </div>
       </div>

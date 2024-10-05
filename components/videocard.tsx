@@ -74,7 +74,7 @@ export default function VideoCard({videoData}:{videoData:any}) {
         <div className=" mb-4 relative group hover:rounded-none hover:scale-[1.01] transition-all delay-300">
             <CustomImage
                 src={videoData.thumbnail}
-                className="aspect-video rounded-md "
+                className="aspect-video rounded-md hover:rounded-none"
             />
             <div className="absolute rounded-sm right-1 bottom-1  bg-black bg-opacity-60 text-white text-[14px] font-medium p-[1px] pl-[4px] pr-[4px] group-hover:opacity-0 group-hover:transition-all delay-300">{formatDuration(videoData.duration)}</div>
         </div>
