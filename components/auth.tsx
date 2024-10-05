@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { jwtDecode } from "jwt-decode";
 import Error from 'next/error';
 import { refreshTokenService } from '@/services/user';
+import LoadingScreen from './ui/loading';
 const withAuth = (WrappedComponent:any) => {
     return (props:any) => {
         const [isAuthenticated, setIsAuthenticated] = useState("loading")
@@ -45,7 +46,7 @@ const withAuth = (WrappedComponent:any) => {
         }, [router]);
 
         if(isAuthenticated == 'loading'){
-            return <div>Loading ... </div>
+            return <LoadingScreen/>
         }else{
             return <WrappedComponent {...props}/>
         }

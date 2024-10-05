@@ -98,7 +98,9 @@
   transform: translateX(0);
   transition: 1000ms all ease-in-out;
 }
-
+.loadingAnimation{
+  animation: ripple 1000ms ease  infinite ;
+}
 /* Keyframes for Text Coming from Left */
 @keyframes slideInFromLeft {
   0% {
@@ -123,6 +125,21 @@
   }
 }
 
+/* Keyframes for Image Coming from Right */
+@keyframes ripple {
+  0% {
+    opacity: 1;
+    transform: scale(1); /* Start off-screen to the right */
+  }
+  50%{
+    opacity: 0.5;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1); /* End in its original position */
+  }
+}
 
 @layer base {
   * {
