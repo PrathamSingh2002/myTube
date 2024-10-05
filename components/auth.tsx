@@ -35,7 +35,7 @@ const withAuth = (WrappedComponent:any) => {
         const validCheckAndMove = async () => {
             const valid = await checkAuth();
             if(!valid){
-                setIsAuthenticated('false');
+                router.push('/login')
             }else{
                 setIsAuthenticated('true');
             }
@@ -46,11 +46,8 @@ const withAuth = (WrappedComponent:any) => {
 
         if(isAuthenticated == 'loading'){
             return <div>Loading ... </div>
-        }else if(isAuthenticated == 'true'){
+        }else{
             return <WrappedComponent {...props}/>
-        }
-        else {
-            return <Error statusCode={404}/>
         }
     };
 };

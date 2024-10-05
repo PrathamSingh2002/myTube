@@ -81,6 +81,47 @@
     --chart-5: 340 75% 55%;
   }
 }
+/* General Show Class */
+.show {
+  opacity: 1;
+  div{
+    animation: slideInFromLeft 1000ms ease forwards;
+  }
+  img{
+    animation: slideInFromRight 1000ms ease 500ms forwards; /* Delay of 500ms */
+  }
+}
+
+/* Hidden Class for Initial State */
+.hidden {
+  opacity: 0;
+  transform: translateX(0);
+  transition: 1000ms all ease-in-out;
+}
+
+/* Keyframes for Text Coming from Left */
+@keyframes slideInFromLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-50px); /* Start off-screen to the left */
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0); /* End in its original position */
+  }
+}
+
+/* Keyframes for Image Coming from Right */
+@keyframes slideInFromRight {
+  0% {
+    opacity: 0;
+    transform: translateX(50px); /* Start off-screen to the right */
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0); /* End in its original position */
+  }
+}
 
 
 @layer base {

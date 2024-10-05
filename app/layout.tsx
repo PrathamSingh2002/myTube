@@ -9,6 +9,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
+import { Button } from "@/components/ui/button";
 const DropDown = dynamic(() => import('@/components/dropDown'), { ssr: false });
 const VideoUploadDropDown = dynamic(() => import('@/components/videoUploadDropdown'), { ssr: false });
 export default function RootLayout({
@@ -43,7 +44,7 @@ const NavBarAndPage = (props:any) =>{
                 <Link href="/home" className=" text-2xl font-bold sm:hidden">HV</Link>
               </div>
               <div className="flex flex-row w-full items-center justify-center" >
-                  <Input  placeholder="search" className="rounded-full pr-8 h-8" onChange={(ev)=>{
+                  <Input disabled = {!user}  placeholder="search" className="rounded-full pr-8 h-8" onChange={(ev)=>{
                     setInputVideo(ev.target.value)
                   }}/>
                   <div className=" size-8  relative right-8 bg-accent  text-primary rounded-r-full transition-all duration-150 hover:bg-primary hover:text-secondary" onClick={() => {
@@ -61,7 +62,7 @@ const NavBarAndPage = (props:any) =>{
             </div>
             <div className=" flex flex-row items-center">
               <div className=" mr-4" >
-                {user && <VideoUploadDropDown/>}
+                {user ? <VideoUploadDropDown/>:<Button size={'sm'} variant={'outline'} onClick={()=>router.push('login')}> Login</Button>}
               </div>
               <div className="">
                 {user && <DropDown />}
