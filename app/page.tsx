@@ -1,53 +1,53 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
-export default function Home() {
-  const router = useRouter();
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if(entry.isIntersecting){
-        entry.target.classList.add('show')
+export default function HomeClient() {
+  useEffect(() => {
+    if (typeof window !== "undefined" && "IntersectionObserver" in window) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("show");
+            observer.unobserve(entry.target);
+          }
+        });
+      });
+
+      const elements = document.getElementsByClassName("animateScroll");
+      for (let i = 0; i < elements.length; i++) {
+        observer.observe(elements[i]);
       }
-    })
-  })
-  useEffect(()=>{
-    const el = document.getElementsByClassName('animateScroll');
-    for(var i=0;i<el.length;i++){
-      observer.observe(el[i]);
+
+      return () => {
+        for (let i = 0; i < elements.length; i++) {
+          observer.unobserve(elements[i]);
+        }
+      };
+    } else {
+      console.warn("IntersectionObserver is not supported in this browser.");
     }
-  },[])
+  }, []);
+
   return (
-    <div className=" grid grid-cols-1 font-bold pl-8 pr-8">
-      <div className=" opacity-0 animateScroll h-screen  items-center grid grid-cols-1  lg:grid lg:grid-cols-2">
-        <div className=" max-lg:text-4xl lg:text-6xl ">
-          {/* <div className="mb-4">
-            <span className=" text-blue-600">
-              H
-            </span>
-            <span>Video</span>
-          </div> */}
-            Unleash Your Creativity with <span className=" text-blue-500">Seamless </span>Video Hosting
+    <div className="grid grid-cols-1 text-6xl font-bold pl-8 pr-8">
+      <div className="animateScroll grid grid-cols-1 gap-x-10 lg:grid-cols-2 items-center h-screen relative">
+        <div className="text-6xl relative">
+          Unleash Your Creativity with <span className="text-blue-500">Seamless </span>Video Hosting
         </div>
-        <img className=" relative opacity-0  rounded shadow-2xl shadow-blue-500  aspect-video " src={'img1.jpg'}>
-        </img>
+        <img className="border-[16px] rounded border-blue-500 aspect-video" src={"img1.jpg"} alt="Video Hosting" />
       </div>
-      <div className=" opacity-0 animateScroll grid  lg:grid-cols-2   items-center  h-screen">
-        <div className=" max-lg:text-4xl lg:text-6xl ">Focus on <span className="text-green-500">Content</span>, Not Ads</div>
-        <img className=" opacity-0  rounded shadow-2xl shadow-green-500  aspect-video " src={'img2.jpg'}>
-        </img>
-      </div>
-      <div className=" opacity-0 animateScroll grid grid-cols-1 lg:grid-cols-2  items-center h-screen ">
-        <div className="max-lg:text-4xl lg:text-6xl ">
-          <div>
-            Build, Share, and <span className=" text-amber-500">Grow</span> with Like-Minded Creators
-          </div>
-          <Button size={'lg'}  className=" font-semibold text-xl" onClick={()=>router.push('/login')}>Start Using</Button>
+      <div className="animateScroll grid grid-cols-1 lg:grid-cols-2 items-center h-screen">
+        <div className="text-6xl">
+          Focus on <span className="text-green-500">Content</span>, Not Ads
         </div>
-        <img className=" opacity-0   rounded shadow-2xl shadow-amber-500  aspect-video " src={'img3.jpg'}>
-        </img>
+        <img className="border-[16px] rounded border-green-500 aspect-video" src={"img2.jpg"} alt="Content Focus" />
+      </div>
+      <div className="animateScroll grid grid-cols-1 lg:grid-cols-2 items-center h-screen">
+        <div className="text-6xl">
+          Build, Share, and <span className="text-amber-500">Grow</span> with Like-Minded Creators
+        </div>
+        <img className="border-[16px] rounded border-blue-500 aspect-video" src={"img3.jpg"} alt="Creators Community" />
       </div>
     </div>
   );
